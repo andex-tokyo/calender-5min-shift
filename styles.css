@@ -1,0 +1,14 @@
+.custom-shift-button {
+  background-color: transparent;
+  color: #4285F4;
+  border: none;
+  padding: 10px;
+  margin-left: 10px;
+  cursor: pointer;
+  float:right
+}
+
+.custom-shift-button:hover {
+  background-color: transparent;
+  color: #357ae8;
+}
