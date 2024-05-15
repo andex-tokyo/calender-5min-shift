@@ -17,45 +17,70 @@ function addButton() {
       button.addEventListener("click", function () {
         let currentTime = startTimeSpan.innerText.trim();
         let endTime = endTimeSpan.innerText.trim();
+        console.log("Current time:", currentTime);
+        console.log("End time:", endTime);
 
-        let timeParts = currentTime.match(/(午前|午後)(\d+):(\d+)/);
-        let endTimeParts = endTime.match(/(午前|午後)(\d+):(\d+)/);
+        function parseTime(timeString) {
+          let match = timeString.match(
+            /(午前|午後)?\s*(\d{1,2}):(\d{2})([APap][Mm])?/
+          );
+          if (match) {
+            let period = match[1] || match[4];
+            let hours = parseInt(match[2]);
+            let minutes = parseInt(match[3]);
 
-        if (timeParts && endTimeParts) {
-          let period = timeParts[1];
-          let hours = parseInt(timeParts[2]);
-          let minutes = parseInt(timeParts[3]);
+            if (period === "午後" || period === "PM" || period === "pm") {
+              if (hours < 12) {
+                hours += 12;
+              }
+            } else if (
+              period === "午前" ||
+              period === "AM" ||
+              period === "am"
+            ) {
+              if (hours === 12) {
+                hours = 0;
+              }
+            }
 
-          let endPeriod = endTimeParts[1];
-          let endHours = parseInt(endTimeParts[2]);
-          let endMinutes = parseInt(endTimeParts[3]);
+            return { hours, minutes };
+          }
+          return null;
+        }
 
-          if (period === "午後" && hours < 12) {
-            hours += 12;
+        let startTime = parseTime(currentTime);
+        let endTimeObj = parseTime(endTime);
+
+        if (startTime && endTimeObj) {
+          startTime.minutes += 5;
+          if (startTime.minutes >= 60) {
+            startTime.hours += 1;
+            startTime.minutes -= 60;
           }
 
-          if (endPeriod === "午後" && endHours < 12) {
-            endHours += 12;
+          if (startTime.hours >= 24) {
+            startTime.hours -= 24;
           }
 
-          minutes += 5;
-          if (minutes >= 60) {
-            hours += 1;
-            minutes -= 60;
-          }
+          let newHours = startTime.hours.toString().padStart(2, "0");
+          let newMinutes = startTime.minutes.toString().padStart(2, "0");
 
-          if (hours >= 24) {
-            hours -= 24;
-          }
+          let newTime24 = `${newHours}:${newMinutes}`;
+          let newTimeJP =
+            startTime.hours >= 12
+              ? `午後${startTime.hours % 12 || 12}:${newMinutes}`
+              : `午前${startTime.hours}:${newMinutes}`;
+          let newTimeEN =
+            startTime.hours >= 12
+              ? `${startTime.hours % 12 || 12}:${newMinutes}PM`
+              : `${startTime.hours}:${newMinutes}AM`;
 
-          let newHours = hours.toString().padStart(2, "0");
-          let newMinutes = minutes.toString().padStart(2, "0");
-          let newPeriod = hours >= 12 ? "午後" : "午前";
-          let newDisplayHours = hours > 12 ? hours - 12 : hours;
-          let newTime = `${newPeriod}${newDisplayHours}:${newMinutes}`;
+          console.log("New time (24-hour):", newTime24);
+          console.log("New time (JP):", newTimeJP);
+          console.log("New time (EN):", newTimeEN);
 
           const listboxElement = dialog.querySelector(
-            '[role="listbox"][aria-label="開始時間"]'
+            '[role="listbox"][aria-label="開始時間"], [role="listbox"][aria-label="Start time"]'
           );
 
           if (listboxElement) {
@@ -67,45 +92,57 @@ function addButton() {
             newTimeOption.role = "option";
             newTimeOption.tabIndex = -1;
             newTimeOption.dataset.ical = `T${newHours}${newMinutes}00`;
-            newTimeOption.innerText = newTime;
+            newTimeOption.innerText = newTimeJP; // 日本語表記に変更可能
             newTimeOption.setAttribute(
               "jsaction",
               "mouseenter:vSTZcb; click:KjsqPd"
             );
             newTimeOption.id = newId;
+            newTimeOption.addEventListener("click", function () {
+              console.log("New time option clicked:", newTimeJP);
+            });
 
             const dropdownMenu = dialog.querySelector(
-              'div[role="listbox"][aria-label="開始時間"]'
+              'div[role="listbox"][aria-label="開始時間"], div[role="listbox"][aria-label="Start time"]'
             );
 
             if (dropdownMenu) {
               dropdownMenu.appendChild(newTimeOption);
+              console.log(
+                "New time option added to dropdown menu:",
+                newTimeOption
+              );
+
               const dropdownButton = dialog.querySelector(
-                'input[role="combobox"][aria-label="開始時間"]'
+                'input[role="combobox"][aria-label="開始時間"], input[role="combobox"][aria-label="Start time"]'
               );
               if (dropdownButton) {
                 dropdownButton.click();
                 setTimeout(() => {
                   newTimeOption.click();
+
                   setTimeout(() => {
                     const endDropdownButton = dialog.querySelector(
-                      'input[role="combobox"][aria-label="終了時間"]'
+                      'input[role="combobox"][aria-label="終了時間"], input[role="combobox"][aria-label="End time"]'
                     );
                     if (endDropdownButton) {
                       endDropdownButton.click();
-                      let originalEndHours = endHours
+
+                      let originalEndHours = endTimeObj.hours
                         .toString()
                         .padStart(2, "0");
-                      let originalEndMinutes = endMinutes
+                      let originalEndMinutes = endTimeObj.minutes
                         .toString()
                         .padStart(2, "0");
-                      let originalEndPeriod = endHours >= 12 ? "午後" : "午前";
-                      let originalEndDisplayHours =
-                        endHours > 12 ? endHours - 12 : endHours;
-                      let originalEndTime = `${originalEndPeriod}${originalEndDisplayHours}:${originalEndMinutes}`;
+                      let originalEndTimeJP =
+                        endTimeObj.hours >= 12
+                          ? `午後${
+                              endTimeObj.hours % 12 || 12
+                            }:${originalEndMinutes}`
+                          : `午前${endTimeObj.hours}:${originalEndMinutes}`;
 
                       const endListboxElement = dialog.querySelector(
-                        '[role="listbox"][aria-label="終了時間"]'
+                        '[role="listbox"][aria-label="終了時間"], [role="listbox"][aria-label="End time"]'
                       );
 
                       if (endListboxElement) {
@@ -118,37 +155,72 @@ function addButton() {
                         originalEndTimeOption.role = "option";
                         originalEndTimeOption.tabIndex = -1;
                         originalEndTimeOption.dataset.ical = `T${originalEndHours}${originalEndMinutes}00`;
-                        originalEndTimeOption.innerText = originalEndTime;
+                        originalEndTimeOption.innerText = originalEndTimeJP;
                         originalEndTimeOption.setAttribute(
                           "jsaction",
                           "mouseenter:vSTZcb; click:KjsqPd"
                         );
                         originalEndTimeOption.id = originalEndId;
+                        originalEndTimeOption.addEventListener(
+                          "click",
+                          function () {
+                            console.log(
+                              "Original end time option clicked:",
+                              originalEndTimeJP
+                            );
+                          }
+                        );
 
                         const endDropdownMenu = dialog.querySelector(
-                          'div[role="listbox"][aria-label="終了時間"]'
+                          'div[role="listbox"][aria-label="終了時間"], div[role="listbox"][aria-label="End time"]'
                         );
 
                         if (endDropdownMenu) {
                           endDropdownMenu.appendChild(originalEndTimeOption);
+                          console.log(
+                            "Original end time option added to dropdown menu:",
+                            originalEndTimeOption
+                          );
+
                           setTimeout(() => {
                             originalEndTimeOption.click();
-                          }, 50);
+                          }, 100);
+                        } else {
+                          console.log("End dropdown menu not found");
                         }
+                      } else {
+                        console.error(
+                          "指定されたroleとaria-labelを持つ終了時間の要素が見つかりません。"
+                        );
                       }
+                    } else {
+                      console.log("End dropdown button not found");
                     }
-                  }, 50);
-                }, 50);
+                  }, 100);
+                }, 100);
+              } else {
+                console.log("Dropdown button not found");
               }
+            } else {
+              console.log("Dropdown menu not found");
             }
+          } else {
+            console.error(
+              "指定されたroleとaria-labelを持つ開始時間の要素が見つかりません。"
+            );
           }
+        } else {
+          console.log("Time parts not matched");
         }
       });
 
       const parentElement = tabPanel.closest("div");
       if (parentElement) {
         parentElement.appendChild(button);
+        console.log("Button added to the form:", button);
       }
+    } else {
+      console.log("Start time or end time span not found");
     }
   }
 }
