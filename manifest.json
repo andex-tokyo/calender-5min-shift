@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Google Calendar Shift 5min",
   "version": "1.0",
-  "description": "Add a button to shift calendar events by 5 minutes",
+  "description": "Add a button to shift calendar event's start time by 5 minutes",
   "permissions": [
     "activeTab",
     "storage"
