@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Google Calendar Shift Button",
+  "name": "Google Calendar Shift 5min",
   "version": "1.0",
   "description": "Add a button to shift calendar events by 5 minutes",
   "permissions": [
