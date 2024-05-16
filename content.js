@@ -11,7 +11,16 @@ function addButton() {
     if (startTimeSpan && endTimeSpan) {
       const button = document.createElement("button");
       button.id = "shift-button";
-      button.innerText = "5分ずらす";
+
+      // ページの言語設定を判定する
+      const lang = document.documentElement.lang || navigator.language;
+
+      if (lang.startsWith("ja")) {
+        button.innerText = "5分ずらす";
+      } else {
+        button.innerText = "Shift 5min";
+      }
+
       button.className = "custom-shift-button";
 
       button.addEventListener("click", function () {
