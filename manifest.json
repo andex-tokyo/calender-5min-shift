@@ -3,9 +3,6 @@
   "name": "Shift 5min",
   "version": "1.0",
   "description": "Add a button to shift an event's start time by 5 minutes in Google Calendar.",
-  "permissions": [
-    "activeTab"
-  ],
   "content_scripts": [
     {
       "matches": ["https://calendar.google.com/*"],
